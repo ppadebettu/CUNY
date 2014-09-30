@@ -1,0 +1,313 @@
+---
+output: pdf_document
+---
+
+Week 5 Data Profile Programming Project (Diabetes Dataset)
+==========================================================
+
+**Author: Prashanth Padebettu**
+
+**Assignment Description:**
+
+For this project, you will create a profile of a data set that you have chosen. 
+
+**Load required packages**
+
+```{r}
+library(car)
+library(ggplot2)
+library(dplyr)
+library(Hmisc)
+```
+**Data Set Information**
+
+The diabetes dataset represents 10 years (1999-2008) of clinical care at 130 US hospitals and integrated delivery networks. It includes over 50 features representing patient and hospital outcomes. Information was extracted from the database for encounters that satisfied the following criteria.
+
+(1) It is an inpatient encounter (a hospital admission).
+(2) It is a diabetic encounter, that is, one during which any kind of diabetes was entered to the system as a diagnosis.
+(3) The length of stay was at least 1 day and at most 14 days.
+(4) Laboratory tests were performed during the encounter.
+(5) Medications were administered during the encounter.
+
+The data contains such attributes as patient number, race, gender, age, admission type, time in hospital, medical specialty of admitting physician, number of lab test performed, HbA1c test result, diagnosis, number of medication, diabetic medications, number of outpatient, inpatient, and emergency visits in the year before the hospitalization, etc.
+
+[click here to view data definition specification: ](http://www.hindawi.com/journals/bmri/2014/781670/tab1/)
+
+**Data overview**
+
+```{r}
+diabetes.data <- read.csv("C:\\Data\\diabetic_data_new.csv",sep=",")
+
+str(diabetes.data)   
+
+paste("The dataset contains", nrow(diabetes.data), "observations", "and ",
+      ncol(diabetes.data),"variables" )
+
+```
+
+**Definitions & Assumptions**
+
+This is an attempt to find out what categorical and/or non-categorical variables are influencing 
+readmissions rates in the hospitals to control costs and provide better treatment to patients.
+
+**Custom Functions**
+
+```{r}
+mosthighlycorrelated <- function(mydataframe,numtoreport)
+{
+  #################################################################
+  #                                                               #
+  #  This function will print out the  linear correlation         #
+  #  coefficients for each pair of variables in the data         #
+  #  set in order of the correlation coefficient                  #
+  #                                                               #
+  #################################################################
+  # find the correlations
+  cormatrix <- cor(mydataframe)
+  # set the correlations on the diagonal or lower triangle to zero,
+  # so they will not be reported as the highest ones:
+  diag(cormatrix) <- 0
+  cormatrix[lower.tri(cormatrix)] <- 0
+  # flatten the matrix into a dataframe for easy sorting
+  fm <- as.data.frame(as.table(cormatrix))
+  # assign user-friendly names
+  names(fm) <- c("First.Variable", "Second.Variable","Correlation")
+  # sort and print the top n correlations
+  head(fm[order(abs(fm$Correlation),decreasing=T),],n=numtoreport)
+}
+
+
+```
+
+**Data Profiling**
+
+What is the overall summary of diabetes data?
+
+```{r}
+summary(diabetes.data)   
+```
+
+Let's profile some individual variables   
+
+```{r}
+dd.desc <- describe(diabetes.data, size = "normalsize")   
+
+```    
+
+Profile of weight:     
+
+```{r}
+dd.desc$weight   
+ggplot(diabetes.data, aes(x=weight))+geom_histogram()     
+
+
+```     
+
+Profile of time_in_hospital:    
+
+```{r}
+dd.desc$time_in_hospital   
+ggplot(diabetes.data, aes(x=time_in_hospital))+geom_histogram()    
+
+
+```     
+
+Profile of max_glu_serum:      
+
+```{r}
+dd.desc$max_glu_serum    
+ggplot(diabetes.data, aes(x=max_glu_serum))+geom_histogram()      
+
+
+```     
+
+Profile of A1Cresult:      
+
+```{r}
+dd.desc$A1Cresult    
+ggplot(diabetes.data, aes(x=A1Cresult))+geom_histogram()      
+
+
+```
+
+Profile of change (in medication):      
+
+```{r}
+dd.desc$change    
+ggplot(diabetes.data, aes(x=change))+geom_histogram()      
+
+
+```
+
+Profile of readmitted:      
+
+```{r}
+dd.desc$readmitted
+ggplot(diabetes.data, aes(x=readmitted))+geom_histogram()      
+
+
+```
+
+
+**Preliminary analysis**   
+
+  - weight: 97% of values are missing and considered too sparse and not reliable for further analysis       
+  - payer code: 40% values are missing is not relevant for the analysis        
+  - medical specialty: 47% values are missing      
+  - max_glu_serum is heavily skewed towards None    
+  - measurement of HbA1c was performed infrequently (17%), it looks very low for patients hospitalized for
+     diagnosis of diabetes     
+  - in 54% of the encounters, medication was not changed during the time in hospital             
+  - 46% of patient encounters are readmissions which is a cause for concern      
+  
+To further profile this dataset the following variables will be used:
+
+**Categorical Variables**   
+
+-age   
+-A1Cresult   
+-change   
+-readmitted   
+
+
+
+**Non Categorical Variables**  
+
+-time_in_hospital     
+-num_lab_procedures   
+-num_procedures    
+-num_medications    
+-number_outpatient    
+-number_emergency    
+-number_inpatient    
+-number_diagnoses    
+-max_glu_serum     
+
+Let's look at some **correlations** below -> There is a bit of **recoding** here for the new data frame as grouping the readmissions (<30 days or >30 days) into a single "YES" bucket helps our analysis further   
+
+```{r}
+# Build a new data frame with variables required for finding correlations
+
+dd.var <- diabetes.data %>% select (encounter_id,patient_nbr,race,gender,age,
+                                    time_in_hospital,num_lab_procedures,num_procedures,
+                                     num_medications,number_outpatient,number_emergency,
+                                     number_inpatient,number_diagnoses,max_glu_serum,
+                                    A1Cresult,change,readmitted )  %>%
+  mutate(
+    readmitted_recode = ifelse(readmitted=="NO","NO","YES")
+    ) %>% select (encounter_id,patient_nbr,race,gender,age,time_in_hospital,
+                  num_lab_procedures,num_procedures,
+                  num_medications,number_outpatient,number_emergency,
+                  number_inpatient,number_diagnoses,max_glu_serum,A1Cresult,change,
+                  readmitted,readmitted_recode )
+
+# Setting the first level to a level that denotes concern or failure
+
+dd.var$A1Cresult <- factor(dd.var$A1Cresult,levels = c("None","Norm",">7",">8"))
+dd.var$change <- factor(dd.var$change,levels = c("No", "Ch"))
+dd.var$readmitted_recode <- factor(dd.var$readmitted_recode,levels = c("YES", "NO"))
+```
+
+**Top 10 correlations between non-categorical variables  **    
+
+```{r}
+mosthighlycorrelated(dd.var[6:13],10)
+
+```
+
+**Top 5 correlations between categorical variables** 
+
+We are doing some **recoding** here to set 0 or 1 for categorical values so we can understand 
+correlations betweel categorical variables (A1Cresult_val,change_val,readmitted_val)
+
+```{r}
+
+var1 <- diabetes.data %>% select (encounter_id,patient_nbr,time_in_hospital,num_lab_procedures,
+                                  num_procedures,num_medications,number_outpatient,number_emergency,
+                                    number_inpatient,number_diagnoses,A1Cresult,change,readmitted ) %>%
+  mutate(
+    A1Cresult_val=ifelse(A1Cresult=="None",0,1),
+    change_val = ifelse(change=="No",0,1),
+    readmitted_val = ifelse(readmitted=="NO",0,1)
+  ) %>% select (encounter_id,patient_nbr,time_in_hospital,num_lab_procedures,num_procedures,
+                num_medications,number_outpatient,number_emergency,
+                number_inpatient,number_diagnoses,A1Cresult_val,change_val,readmitted_val)
+
+var1$A1Cresult_val <- as.numeric(var1$A1Cresult_val)
+var1$change_val <- as.numeric(var1$change_val)
+var1$readmitted_val <- as.numeric(var1$readmitted_val)
+
+mosthighlycorrelated(var1[11:13],5)
+
+```
+
+
+Let's run some **scatterplots** againt a sample of diabetes dataset (due to performance considerations)    
+The **sample data** is based on the following table which shows Hispanic community forming a reasonable sample of the complete dataset    
+
+```{r}
+table(dd.var$race, dd.var$readmitted)    
+
+sample.data <- subset(dd.var, race=="Hispanic",
+                  select=c(encounter_id,patient_nbr,A1Cresult,change,
+                           readmitted_recode,time_in_hospital,number_diagnoses))
+
+scatterplotMatrix(sample.data[3:7])
+```
+
+Using full dataset, let's create m by n tables of some variables, V1 = side, V2 = top       
+Display readmissions by A1Cresult, medication changed during the time in hospital    
+
+```{r}
+table(dd.var$A1Cresult, dd.var$readmitted)
+table(dd.var$change, dd.var$readmitted)
+table(dd.var$A1Cresult, dd.var$change)
+
+plot(dd.var$A1Cresult, dd.var$readmitted_recode, xlab="A1C Test Results ?",
+     ylab="Readmitted ?")
+
+plot(dd.var$change, dd.var$readmitted_recode, xlab="Medication Changed ?",
+     ylab="Readmitted ?")
+
+plot(dd.var$A1Cresult, dd.var$change, xlab="A1C Test Results ?",
+     ylab="Medication Changed ?")
+
+```
+
+**further observations**
+
+-there seems to be high readmissions when A1C tests are not administered   
+-there seems to be more readmissions when medications are not changed during hospitalization    
+-there seems to be less inclination to change medication when A1C tests are not administered        
+
+Now, let's look at some **correlations** between categorical variables (A1Cresult, change,readmitted_recode) using **chi square test** to test our hypothesis found in preceding analysis        
+
+
+```{r}
+columns <- c(15,16,18)
+vars <- names(dd.var)[columns]
+
+out <-  apply( combn(columns,2),2,function(x){
+  chisq.test(table(dd.var[,x[1]],dd.var[,x[2]]),correct=F)$p.value
+})
+
+out <- cbind(as.data.frame(t(combn(vars,2))),out)   
+out   
+```
+
+From the output above, it is clear that there is strong correlation between the three 
+categorical variables that were tested. Further hypothesis can be made as following    
+
+- there will be less changes to medication if A1C tests are not administered    
+- the chances of readmission are high when A1C tests are not administered    
+- need to further explore the relation between change in medication and readmissions     
+
+
+Now, let's run some **generalized linear models** to find if some of the predictor variables are influencing the readmission outcomes
+
+```{r}
+output <- glm(readmitted ~ change + A1Cresult , data=dd.var, family=binomial)
+
+summary(output)
+```
+
