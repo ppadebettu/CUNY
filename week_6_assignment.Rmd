@@ -1,0 +1,55 @@
+---
+title: "week_6_assignment"
+author: "ppadebettu"
+date: "Monday, October 06, 2014"
+output: html_document
+---
+
+Assignment: Find a web page from a different site , and use the rvest package functions to pull at
+least one piece of information from that web page
+
+```{r}
+require(rvest)
+```
+
+First, let's get some **Bonds** data from "http://finance.yahoo.com/market-overview/""
+
+```{r}
+
+theURL <- html("http://finance.yahoo.com/market-overview/")
+
+bonds <- theURL %>% html() %>%
+     html_nodes("#mediabondsgs div") %>% html_text()
+
+# regular expression to trim leading and trailing spaces
+trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+
+bonds <- trim(bonds)
+
+# replace \n \t with empty space
+
+bonds <- gsub("\\n"," ", bonds)
+bonds <- gsub("\\t"," ", bonds)
+
+bonds[2]
+
+```
+
+Now, let's get some information on **Mutual Funds Data**
+
+```{r}
+
+movers <- theURL %>% html() %>%
+      html_nodes("#mediamfcategoryview div") %>% html_text()
+
+movers <- trim(movers)
+
+# replace \n \t with empty space
+
+movers <- gsub("\\n"," ", movers)
+movers <- gsub("\\t"," ", movers)
+
+movers[2]
+
+```
+
