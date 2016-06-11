@@ -17,16 +17,16 @@ a -- Who are your target users?<br>
 The site's target users are retail customers shopping for both traditional and electronic toys<br>
 
 b -- What are their key goals?<br>
-Their key goals are to get parents shop online for most of the toys particularly during holidays and other sale events. More over, Toysrus would like to establish a strong online presence in offering children's toys as online sales in US are increasing every year compared to brick and mortar stores<br>
+Their key goals are to get parents shop online for most of the toys particularly during holidays and other sales events. Moreover, Toysrus would like to establish itself as a strong online retailer in offering children's toys due to the fact that online sales in US are increasing every year compared to brick and mortar stores<br>
 
 c -- How can you help them accomplish their goals?<br>
-One way to help Toysrus.com is to be able to come up with a great user experience for the customers during their online shopping process. We can help them think about target market and appropriately tailor content to shoppers. The whole purchasing process has to be as quick as possible to retain shopper's interest in buying products. From an user's perspective, we can help them accomplish their goals by giving feedback on their products, recommendations and by periodically adjusting our interests and categories of products in the profile section
+One way to help Toysrus.com is to be able to come up with a great user experience for the customers during their online shopping process. We can help them think about target market and appropriately tailor content to shoppers. The whole purchasing process has to be as quick as possible to retain shopper's interest in buying products. From an user's perspective, we can help them accomplish their goals by giving feedback on their products, recommendations and by regularly adjusting our interests and categories of products in the profile section
 
 <h3>2. Reverse Engineering of the site</h3>
-<p>Toysrus is using traditional tacking features like cookies, sessions, previous browisng history & previous purchase history and online data entered like user search words, filtered categories to provide recommendations to it's online customers. It has sections like "Recommended for you", "Customers also liked", "Shoppers like you also liked" which come up dynamically based on the how we interact with the website</p>
+<p>Toysrus is using traditional tacking features like cookies, sessions, previous browsing history & previous purchase history and online data entered like user search words, filtered categories to provide recommendations to it's online customers. It has sections like "Recommended for you", "Customers also liked", "Shoppers like you also liked" which come up dynamically based on the how we interact with the website</p>
 <h3>3. Recommendations for improving recommender capabilities</h3>
-<p>One way to improve the capabilties of the recommender is to make efficient use of the user entered search words and category filters to recommending relevant products. In one example, I was searching for bicycles for boys in 24 inch height group, but I was getting toy cars, crayons, girls bicycles in the list of recommended products</p> 
-<p>Products like bicycles also need accessories particularly safety lights, locks, bottle holders etc, so the recommender system should also use related product segments to display accessrories which can help both sales for the company and safety aspects for the shopper</p>
+<p>One way to improve the capabilties of the recommender is to make efficient use of the user entered search words and category filters for recommending relevant products. In one example, I was searching for bicycles for boys in 24 inch height group, but I was getting toy cars, crayons, girls bicycles in the list of recommended products</p> 
+<p>Products like bicycles also need accessories particularly safety lights, locks, bottle holders etc, so the recommender system should also use related product segments to display accessrories which can help both sales of the company and safety aspects of the shopper</p>
 
 
 
